@@ -1,0 +1,10 @@
+#!/bin/bash
+
+while (( "$#" )); do
+	xattr $1 | while read attr; do
+		echo "removing $attr from $1"
+		xattr -d $attr $1
+	done
+	shift
+done
+
