@@ -1,0 +1,13 @@
+#!/bin/bash
+
+before=$(du -sb | cut -f1 )
+count=$(find . -name '*.png' | wc -l)
+
+crush-all
+
+after=$(du -sb | cut -f1)
+
+echo "Before:  " $before
+echo "After:   " $after
+echo "# Files: " $count
+echo "Savings: " $(expr $before - $after)

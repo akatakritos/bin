@@ -1,0 +1,4 @@
+#!/bin/bash
+pngcrush -brute "$1" tmp.png
+mv tmp.png "$1"
+
