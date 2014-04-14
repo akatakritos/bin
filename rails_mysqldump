@@ -1,0 +1,19 @@
+#!/usr/bin/ruby
+
+require 'rubygems'
+require 'yaml'
+require 'time'
+
+config = YAML.load(File.read("config/database.yml"))
+database= config[ENV["RAILS_ENV"] || "production"]
+
+unless database["adapter"] =~ /mysql/
+  puts "Current RAILS_ENV is not a mysql database"
+  exit 1
+end
+
+output_file = File.join('.', 'db', "#{database['database']}-#{Time.now.utc.iso8601}.sql.gz")
+
+cmd = "mysqldump -h \"#{database['host']}\" -u \"#{database['username']}\" -p\"#{database['password']}\" -P \"#{database['port']}\" \"#{database['database']}\" | gzip > #{output_file}"
+# puts cmd
+exec cmd
