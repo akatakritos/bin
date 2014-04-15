@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+# Parses a CodeKit config file and processes all sass files defined within.
+#
+# $ sasser
+#   Finds all .scss files that are marked for compilation and compiles them
+#
+# $ sasser --watch
+#   Finds all .scss files marked for compilation and watches them for changes,
+#   compiling them on modification
+#
+require 'json'
+require 'optparse'
+
+SassFile = Struct.new(:input, :output)
+
+def sass_files(config)
+  config['files'].each do |file, c|
+    yield SassFile.new("." + c['inputAbbreviatedPath'], "." + c['outputAbbreviatedPath']) if file.match(/\.scss$/) && c['ignore'] == 0
+  end
+end
+
+
+def compile(config)
+  sass_files(config) do |sass|
+    puts "processing #{sass.input}"
+    system "sass --style compressed #{sass.input} #{sass.output}"
+  end
+end
+
+def watch(config)
+  files = []
+  sass_files(config) do |sass|
+    files.push([sass.input, sass.output])
+  end
+
+  cmd ="sass --style compressed --watch #{files.map { |f| f.join(':') }.join(' ') }"
+  puts cmd
+  exec cmd
+end
+
+
+options = {
+  :watch => false
+};
+
+OptionParser.new { |opts| 
+  opts.banner =  "Usage: sasser [options]"
+
+  opts.on("--watch", 'watch the sass files for changes') do
+    options[:watch] = true
+  end
+}.parse!
+
+config = JSON.parse(File.read('config.codekit'))
+if options[:watch]
+  watch(config)
+else
+  compile(config)
+end
