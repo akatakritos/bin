@@ -10,37 +10,92 @@
 #
 require 'json'
 require 'optparse'
+require 'pathname'
 
-SassFile = Struct.new(:input, :output)
+class SassFile
+  attr_reader :input, :output
 
-def sass_files(config)
-  config['files'].each do |file, c|
-    yield SassFile.new("." + c['inputAbbreviatedPath'], "." + c['outputAbbreviatedPath']) if file.match(/\.scss$/) && c['ignore'] == 0
+  def initialize(input, output)
+    @input  = relative_from_cwd(input)
+    @output = relative_from_cwd(output)
   end
+
+  private
+    def relative_from_cwd(abs_path)
+      Pathname.new(abs_path).relative_path_from(Pathname.new(Dir.pwd))
+    end
 end
 
 
-def compile(config)
-  sass_files(config) do |sass|
-    puts "processing #{sass.input}"
-    system "sass --style compressed #{sass.input} #{sass.output}"
-  end
-end
+class Sasser
+  attr_reader :config, :codekit_dir
 
-def watch(config)
-  files = []
-  sass_files(config) do |sass|
-    files.push([sass.input, sass.output])
+  def initialize(dry_run = false)
+    @dry_run = dry_run
+    @codekit_dir = find_codekit_dir
+    @config = JSON.parse(File.read(codekit_dir + "/config.codekit"))
   end
 
-  cmd ="sass --style compressed --watch #{files.map { |f| f.join(':') }.join(' ') }"
-  puts cmd
-  exec cmd
+  def dry_run?
+    @dry_run
+  end
+
+  def compile
+    sass_files do |sass|
+      puts "processing #{sass.input}"
+      system "sass --style compressed #{sass.input} #{sass.output}"
+    end
+  end
+
+  def watch
+    cmd ="sass --style compressed --watch #{sass_files.map { |f| "#{f.input}:#{f.output}" }.join(' ') }"
+    exec cmd
+  end
+
+  private
+
+    def exec(cmd)
+      puts cmd
+      super(cmd) unless dry_run?
+    end
+
+    def system(cmd)
+      if dry_run?
+        puts cmd
+      else
+        super(cmd)
+      end
+    end
+
+    def find_codekit_dir
+      dir = File.expand_path(".")
+      while dir != "/" && !File.exist?(dir + "/config.codekit")
+        dir = File.expand_path(dir + "/..")
+      end
+      dir
+    end
+
+    def in_subdir?(full_path)
+      full_path.start_with?(Dir.pwd)
+    end
+
+    def sass_files
+      return to_enum(:sass_files) unless block_given?
+
+      config['files'].each do |file, c|
+        fullpath = File.expand_path(codekit_dir + c['inputAbbreviatedPath'])
+        fulloutpath = File.expand_path(codekit_dir + c['outputAbbreviatedPath'])
+        yield SassFile.new(fullpath, fulloutpath) if file.match(/\.scss$/) && c['ignore'] == 0 && in_subdir?(fullpath)
+      end
+    end
+
+
 end
 
 
 options = {
-  :watch => false
+  :watch => false,
+  :dryrun => false
 };
 
 OptionParser.new { |opts| 
@@ -49,11 +104,16 @@ OptionParser.new { |opts|
   opts.on("--watch", 'watch the sass files for changes') do
     options[:watch] = true
   end
+
+  opts.on("--dry-run") do
+    options[:dryrun] = true
+  end
 }.parse!
 
-config = JSON.parse(File.read('config.codekit'))
+
+sasser = Sasser.new(options[:dryrun])
 if options[:watch]
-  watch(config)
+  sasser.watch
 else
-  compile(config)
+  sasser.compile
 end
