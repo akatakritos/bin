@@ -1,14 +1,22 @@
 #!/usr/bin/env ruby
-# Parses a CodeKit config file and processes all sass files defined within.
 #
 # $ sasser
-#   Finds all .scss files that are marked for compilation and compiles them
+#   Finds all .scss files that have a matching file in css/ folder and compiles them
 #
 # $ sasser --watch
 #   Finds all .scss files marked for compilation and watches them for changes,
 #   compiling them on modification
 #
-require 'json'
+# Search recursively for any *.scss file in a sass/ folder. If a corresponding output
+# file is found in the adjacent css folder, yield that pair for compilation
+#
+# data/sass/style.scss
+# data/sass/_mixins.scss
+# data/css/style.css
+#
+# Given the above, only style.css will be processed because a corresponding style.css was
+# found in the adjacent css folder.
+#
 require 'optparse'
 require 'pathname'
 
@@ -28,12 +36,9 @@ end
 
 
 class Sasser
-  attr_reader :config, :codekit_dir
 
   def initialize(dry_run = false)
     @dry_run = dry_run
-    @codekit_dir = find_codekit_dir
-    @config = JSON.parse(File.read(codekit_dir + "/config.codekit"))
   end
 
   def dry_run?
@@ -67,26 +72,18 @@ class Sasser
       end
     end
 
-    def find_codekit_dir
-      dir = File.expand_path(".")
-      while dir != "/" && !File.exist?(dir + "/config.codekit")
-        dir = File.expand_path(dir + "/..")
-      end
-      dir
-    end
-
-    def in_subdir?(full_path)
-      full_path.start_with?(Dir.pwd)
-    end
-
     def sass_files
       return to_enum(:sass_files) unless block_given?
 
-      config['files'].each do |file, c|
-        fullpath = File.expand_path(codekit_dir + c['inputAbbreviatedPath'])
-        fulloutpath = File.expand_path(codekit_dir + c['outputAbbreviatedPath'])
-        yield SassFile.new(fullpath, fulloutpath) if file.match(/\.scss$/) && c['ignore'] == 0 && in_subdir?(fullpath)
+      Dir['**/sass/*.scss'].each do |file|
+        fullpath = File.expand_path(file)
+        fulloutpath = File.expand_path(File.dirname(fullpath) + '/../css/' + File.basename(fullpath, ".scss") + ".css")
+        yield SassFile.new(fullpath, fulloutpath) if File.exists?(fulloutpath) && valid?(file)
       end
+    end
+
+    def valid?(filename)
+      !filename.match /node_modules/
     end
 
 
