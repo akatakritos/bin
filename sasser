@@ -37,8 +37,9 @@ end
 
 class Sasser
 
-  def initialize(dry_run = false)
+  def initialize(dry_run = false, style = "compressed")
     @dry_run = dry_run
+    @style = style
   end
 
   def dry_run?
@@ -48,12 +49,12 @@ class Sasser
   def compile
     sass_files do |sass|
       puts "processing #{sass.input}"
-      system "sass --style compressed #{sass.input} #{sass.output}"
+      system "sass --style #{@style} #{sass.input} #{sass.output}"
     end
   end
 
   def watch
-    cmd ="sass --style compressed --watch #{sass_files.map { |f| "#{f.input}:#{f.output}" }.join(' ') }"
+    cmd ="sass --style #{@style} --watch #{sass_files.map { |f| "#{f.input}:#{f.output}" }.join(' ') }"
     exec cmd
   end
 
@@ -92,10 +93,11 @@ end
 
 options = {
   :watch => false,
-  :dryrun => false
+  :dryrun => false,
+  :style => "compressed"
 };
 
-OptionParser.new { |opts| 
+OptionParser.new { |opts|
   opts.banner =  "Usage: sasser [options]"
 
   opts.on("--watch", 'watch the sass files for changes') do
@@ -105,10 +107,19 @@ OptionParser.new { |opts|
   opts.on("--dry-run") do
     options[:dryrun] = true
   end
+
+  opts.on("--style STYLE", "set the output style (nested, expanded, compact, compressed)") do |style|
+    unless ["nested", "expanded", "compact", "compressed"].include?(style)
+      puts "Invalid style format: #{style}"
+      exit
+    end
+
+    options[:style] = style
+  end
 }.parse!
 
 
-sasser = Sasser.new(options[:dryrun])
+sasser = Sasser.new(options[:dryrun], options[:style])
 if options[:watch]
   sasser.watch
 else
