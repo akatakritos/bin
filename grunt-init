@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "Installing default Gruntfile.js..."
+wget --quiet https://gist.githubusercontent.com/akatakritos/fd2d3e0cc851e48368e8/raw/SampleGruntfile.js -O Gruntfile.js
+
+echo "npm install..."
+npm install --quiet --save-dev grunt grunt-contrib-{concat,jshint,uglify,watch} >/dev/null
+
