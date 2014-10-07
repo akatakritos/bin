@@ -1,4 +1,7 @@
 #!/bin/bash
-pngcrush -brute "$1" tmp.png
-mv tmp.png "$1"
+
+for file in "$@"; do
+	pngcrush -brute "$file" tmp.png
+	mv tmp.png "$file"
+done
 
