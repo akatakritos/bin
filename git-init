@@ -1,0 +1,15 @@
+#!/bin/sh
+
+DEFAULT_EMAIL="burkemd1+github@gmail.com"
+
+git init
+wget -O .gitignore https://raw.githubusercontent.com/github/gitignore/master/VisualStudio.gitignore
+
+echo -n "Email? ($DEFAULT_EMAIL): "
+read email
+
+if [ "$email" == "" ]; then
+	email=$DEFAULT_EMAIL
+fi
+
+git config --local user.email "$email"
