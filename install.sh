@@ -12,7 +12,7 @@ function simlink() {
 	fi
 }
 
-for f in *; do
+for f in "$@"; do
 	if [ "$f" != "$SCRIPT_NAME" ]; then
 		simlink $f
 	fi
