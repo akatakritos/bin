@@ -1,0 +1,15 @@
+#!/bin/bash
+
+LANGUAGES=( None C C++ Node VisualStudio Ruby Rust Go Java Sass )
+
+select language in "${LANGUAGES[@]}"; do
+
+	if [ "$language" != "None" ]; then
+		url="https://raw.githubusercontent.com/github/gitignore/master/$language.gitignore"
+		echo "$url -> .gitignore"
+		wget --quiet --output-document .gitignore $url
+	fi
+
+	break
+done
+
