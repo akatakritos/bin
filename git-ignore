@@ -4,7 +4,7 @@
 # Presents a curated list of project types I'm likely to use and once selected
 # downloads the approriate .gitignore
 
-LANGUAGES=( None C C++ Node VisualStudio Ruby Rust Go Java Sass )
+LANGUAGES=( None Node VisualStudio Ruby Sass Rust C C++ Go Java )
 
 select language in "${LANGUAGES[@]}"; do
 
