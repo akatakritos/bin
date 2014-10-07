@@ -9,7 +9,4 @@ if [ "$repo_name" == "" ]; then
 	repo_name=$(basename "$PWD")
 fi
 
-echo $user_host
-echo $repo_name
-
 ssh $user_host "mkdir -p ~/repos/$repo_name.git && cd ~/repos/$repo_name.git && git init --bare ."
