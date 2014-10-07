@@ -1,4 +1,7 @@
 #!/bin/bash
+# My custom git repo initialization
+# 1. Download an appropriate gitignore
+# 2. Initialize the local user.email config since I use different ones for different projects
 
 DEFAULT_EMAIL="burkemd1+github@gmail.com"
 
