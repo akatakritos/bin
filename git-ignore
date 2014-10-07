@@ -1,4 +1,8 @@
 #!/bin/bash
+# Download a .gitignore from github.com/github/gitignore project
+#
+# Presents a curated list of project types I'm likely to use and once selected
+# downloads the approriate .gitignore
 
 LANGUAGES=( None C C++ Node VisualStudio Ruby Rust Go Java Sass )
 
