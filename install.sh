@@ -8,7 +8,7 @@ function simlink() {
 		echo "Skippng $1"
 	else
 		echo "Linking $1"
-		ln -s "$(realpath $1)" "$HOME/bin/$1"
+		ln -s "$(readlink -f -- $1)" "$HOME/bin/$1"
 	fi
 }
 
