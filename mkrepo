@@ -5,6 +5,11 @@
 user_host=$1
 repo_name=$2
 
+if [ "$user_host" == "" ]; then
+	echo "user@host required"
+	exit 1
+fi
+
 if [ "$repo_name" == "" ]; then
 	repo_name=$(basename "$PWD")
 fi
