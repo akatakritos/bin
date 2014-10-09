@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# gitpushall - Push current branch to all remote repositories
+#
+# Usage:
+#    gitpushall
+#
+# Add a git alias if you wish
+
+current_branch=$(git branch | sed 's/^\* //')
+remotes=$(git remote)
+
+for remote in $remotes; do
+
+  echo "Executing: git push $remote $current_branch"
+  git push $remote $current_branch
+
+done;
