@@ -15,4 +15,6 @@ for remote in $remotes; do
   echo "Executing: git push $remote $current_branch"
   git push $remote $current_branch
 
+  echo ""
+
 done;
