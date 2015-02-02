@@ -1,0 +1,25 @@
+#!/bin/bash
+# Open SourceTree to the file status window for the repo
+# in the provided directory.
+#
+# stree [path]
+#
+# if no path is provided, the current working directory is used
+
+# Cygwin path to the source tree executable
+SOURCE_TREE="/cygdrive/c/Program Files (x86)/Atlassian/SourceTree/SourceTree.exe"
+
+# Determine the path. If a path is provided, convert it to
+# (w)indows (a)bsolute path with cygpath. Otherwise, convert
+# the current directory
+if [ "$1" != "" ]; then
+  cwd=$(cygpath -wa $1)
+else
+  cwd=$(cygpath -wa $PWD)
+fi
+
+# Override the HOME environment variable to be the windows
+# HOME instead of cygwin's $HOME. Then execute source tree
+# See https://blog.sourcetreeapp.com/2014/01/29/sourcetree-for-windows-1-4-released/
+# for options
+HOME="$HOMEPATH" cygstart -v "$SOURCE_TREE" -f $cwd status
