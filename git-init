@@ -17,3 +17,9 @@ if [ "$email" == "" ]; then
 fi
 
 git config --local user.email "$email"
+
+if [[ "$OS" =~ Windows ]]; then
+  # Cygwin things
+  git config --local core.fileMode false
+  git config --local core.whitespace cr-at-eol
+fi
