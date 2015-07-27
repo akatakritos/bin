@@ -15,3 +15,8 @@ if [ "$repo_name" == "" ]; then
 fi
 
 ssh $user_host "mkdir -p ~/repos/$repo_name.git && cd ~/repos/$repo_name.git && git init --bare ."
+
+if [ -d ".git" ]; then
+  user=$(echo "$user_host" | cut -d '@' -f 1)
+  git remote add dreamhost "ssh://$user_host/home/$user/repos/$repo_name.git"
+fi
