@@ -1,0 +1,13 @@
+#!/bin/bash
+
+
+# If the first command is "git" shift it off
+# this will allow git autostash !! (which would expand to
+# git autostash git rebase to still work by stripping out that second
+# git
+if [ "$1" == "git" ]; then
+  shift
+fi
+
+git stash save --include-untracked ForAutoStash | grep 'No local changes to save' && git $* || (git $* && git stash pop)
+
